@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glloopy - Oficial</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Header com botão YouTube -->
+  <header class="p-4 bg-white shadow flex justify-between items-center">
+    <h1 class="text-xl font-bold">🌐 Glloopy</h1>
+    <nav>
+      <a href="https://www.youtube.com/@ContatoGlloopy" target="_blank" 
+         class="flex items-center space-x-2 text-red-600 font-bold hover:underline">
+        <img src="youtube.svg" alt="YouTube" class="w-6 h-6">
+        <span>@ContatoGlloopy</span>
+      </a>
+    </nav>
+  </header>
+
+  <main class="p-6 space-y-6">
+
+    <!-- Bloco de Anúncios AdSense -->
+    <section id="ads-block" style="display:none">
+      <h2 class="text-lg font-bold mb-2">Publicidade</h2>
+      <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-XXXXXXXXXX"
+          data-ad-slot="1234567890"
+          data-ad-format="auto"></ins>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </section>
+
+    <!-- Área de Afiliados -->
+    <section id="affiliate-area" class="p-4 border rounded bg-gray-100 shadow" style="display:none">
+      <h2 class="text-lg font-bold mb-2">Ofertas Recomendadas</h2>
+      <div id="affiliate-links">
+        <!-- Links de afiliados inseridos dinamicamente pela IA -->
+      </div>
+    </section>
+
+    <!-- Bloco Últimos Vídeos -->
+    <section class="p-4 bg-white rounded shadow mt-6">
+      <h2 class="text-lg font-bold mb-4">Últimos Vídeos</h2>
+      <div id="youtube-videos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- Formulário de Contato -->
+    <section id="contact-block" class="p-4 border rounded bg-white shadow mt-4" style="display:none">
+      <h2 class="text-lg font-bold mb-2">Contato Comercial</h2>
+      <form id="contact-form">
+        <input type="text" name="name" placeholder="Seu nome" class="border p-2 w-full mb-2"/>
+        <input type="email" name="email" placeholder="Seu e-mail" class="border p-2 w-full mb-2"/>
+        <textarea name="message" placeholder="Escreva sua mensagem..." class="border p-2 w-full mb-2"></textarea>
+        <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded">Enviar</button>
+      </form>
+      <p class="text-sm mt-2">Responderemos através do e-mail: <b>contato@glloopy.com</b></p>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="p-4 bg-gray-200 text-center">
+    <p>&copy; 2025 Glloopy</p>
+    <a href="https://www.youtube.com/@ContatoGlloopy" target="_blank" class="text-red-600 font-bold hover:underline">
+      YouTube: @ContatoGlloopy
+    </a>
+  </footer>
+
+  <script>
+  async function loadStatus(){
+    try {
+      const resp = await fetch("http://localhost:4000/api/status"); // troque pelo IP/host do GlobeConnect
+      const status = await resp.json();
+      if(status.ads) document.getElementById("ads-block").style.display = "block";
+      if(status.affiliates) document.getElementById("affiliate-area").style.display = "block";
+      if(status.contact) document.getElementById("contact-block").style.display = "block";
+    } catch (e) {
+      console.error("Erro ao buscar status do painel:", e);
+    }
+  }
+
+  async function loadYouTubeVideos() {
+    const apiKey = "YOUTUBE_API_KEY_AQUI"; // trocar pela sua chave
+    const channelId = "UCxxxxxxxxxxxxx";   // trocar pelo ID real do canal
+    try {
+      const resp = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=6`);
+      const data = await resp.json();
+      const container = document.getElementById("youtube-videos");
+      container.innerHTML = data.items.map(v => `
+        <a href="https://www.youtube.com/watch?v=${v.id.videoId}" target="_blank" class="block border rounded overflow-hidden shadow hover:shadow-lg">
+          <img src="${v.snippet.thumbnails.medium.url}" alt="${v.snippet.title}" class="w-full">
+          <div class="p-2 text-sm">${v.snippet.title}</div>
+        </a>
+      `).join("");
+    } catch (e) {
+      console.error("Erro ao carregar vídeos do YouTube", e);
+    }
+  }
+
+  document.getElementById("contact-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData);
+    await fetch("/api/contact", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    alert("Mensagem enviada com sucesso! Nossa IA irá responder em breve.");
+  });
+
+  loadStatus();
+  loadYouTubeVideos();
+  </script>
+
+</body>
+</html>

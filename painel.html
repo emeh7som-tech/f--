@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel Secreto • GlobeConnect</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Inter,Arial,sans-serif;margin:0;background:#0b1220;color:#e6e8ee}
+    header{padding:16px 24px;background:linear-gradient(90deg,#0f172a,#0b1220);border-bottom:1px solid #1f2a44}
+    .wrap{max-width:960px;margin:0 auto;padding:24px}
+    .card{background:#0f172a;border:1px solid #1f2a44;border-radius:16px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.3);margin-bottom:16px}
+    button{background:#f59e0b;border:0;border-radius:10px;padding:10px 14px;color:#111;cursor:pointer;margin-right:8px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#111827;border:1px solid #27324a;margin-right:8px}
+    pre{background:#0b1220;border:1px solid #1f2a44;border-radius:12px;padding:12px;overflow:auto}
+  </style>
+</head>
+<body>
+  <header><div class="wrap"><h1>Painel Secreto • GlobeConnect</h1><p>Controle de Anúncios, Afiliados e Contato Comercial</p></div></header>
+  <div class="wrap">
+    <div class="card">
+      <h3>Controles</h3>
+      <div>
+        <button onclick="toggleFeature('ads')">Ativar/Desativar Anúncios</button>
+        <span id="status-ads" class="pill">ads: ...</span>
+      </div>
+      <div style="margin-top:10px">
+        <button onclick="toggleFeature('affiliates')">Ativar/Desativar Afiliados</button>
+        <span id="status-affiliates" class="pill">affiliates: ...</span>
+      </div>
+      <div style="margin-top:10px">
+        <button onclick="toggleFeature('contact')">Ativar/Desativar Contato</button>
+        <span id="status-contact" class="pill">contact: ...</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Status Atual</h3>
+      <pre id="stateDump">{}</pre>
+      <small>Dica: a cada mudança, o site Glloopy pode consultar <code>/api/status</code> para decidir o que exibir.</small>
+    </div>
+  </div>
+
+  <script>
+    async function loadStatus(){
+      const r = await fetch('/api/status');
+      const j = await r.json();
+      document.getElementById('stateDump').textContent = JSON.stringify(j, null, 2);
+      document.getElementById('status-ads').textContent = 'ads: ' + (j.ads ? 'ON' : 'OFF');
+      document.getElementById('status-affiliates').textContent = 'affiliates: ' + (j.affiliates ? 'ON' : 'OFF');
+      document.getElementById('status-contact').textContent = 'contact: ' + (j.contact ? 'ON' : 'OFF');
+    }
+    async function toggleFeature(feature){
+      await fetch('/api/toggle/' + feature, {method:'POST'});
+      await loadStatus();
+    }
+    loadStatus();
+  </script>
+</body>
+</html>
